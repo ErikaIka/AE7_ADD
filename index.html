@@ -1,0 +1,102 @@
+<!--https://openlibrary.org/dev/docs/api/books
+C:\xampp\htdocs-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="cuerpo">
+        <header>
+            <h1>Biblioteca para control de lecturas</h1>
+        </header>
+        <form class="formulario">
+            <label for="flibro">Buscar por título:</label>&nbsp;
+            <input type="text" id="foundlibro" name="flibro" placeholder="Título...">&nbsp;
+            <button type="button" onclick="getbooksbytitle()">Mostrar libro</button>&nbsp;&nbsp;&nbsp;
+            <label for="foundisbn">Buscar por ISBN:</label> &nbsp;
+            <input type="number" id="foundisbn" name="fisbn" placeholder="ISBN...">&nbsp;
+            <button type="button" onclick="getbooksbyisbn()">Mostrar libro</button>
+        </form>
+        <div id="presentacion">
+            <br><text>Bienvenidos a esta nueva biblioteca personal!<p>Actualmente estamos trabajando para que puedas almacenar tus reseñas personales y llevar un control de aquellas historias en las que te has adentrado, las mil y una aventuras que has vivido, cómo las has sentido y todas aquellas que te quedan por seguir disfrutando!</text>
+            <text><p>Poco a poco se irán añadiendo nuevas funciones, por ahora, puedes ir añadiendo libros a tus favoritos!</text><br>
+            <br><img class="guinyo" src="./images/eye.png">
+        </div>
+        
+        <div id="busqueda">
+            <h1 id="titulo"></h1>
+            <img id='imgBuscada' src=""><br>
+            <text class="datos">Año de publicación: </text>
+            <text id="anyo_publi"></text>
+            <br><text class="datos">ISBN: </text>
+            <text id="bookisbn"></text><br>
+            <br><button type="button" id="buttonFav" onclick="guardar()">Añadir a favoritos</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src = "https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script type="text/javascript">
+        function getbooksbytitle() {
+            let entrada = document.getElementById("foundlibro").value;
+            axios
+                .get("https://openlibrary.org/search.json?title="+entrada)
+                .then(response => {
+                    document.getElementById('titulo').innerHTML = response.data.docs[0].title;
+                    document.getElementById('imgBuscada').src = "http://covers.openlibrary.org/b/isbn/"+response.data.docs[0].isbn[0]+"-L.jpg?default=false";
+                    document.getElementById('anyo_publi').innerHTML = response.data.docs[0].publish_date[0];
+                    document.getElementById('bookisbn').innerHTML = response.data.docs[0].isbn[0];
+                })
+                .catch(error => {
+                    document.getElementById('titulo').innerHTML = "Error, título no encontrado: " + error;
+                })
+                document.getElementById("busqueda").style.display= 'block';
+                document.getElementById("presentacion").style.display = 'none';
+        }
+
+        function getbooksbyisbn(){
+            let isbnEntrada = document.getElementById("foundisbn").value;
+            axios
+                .get("https://openlibrary.org/search.json?q="+isbnEntrada)
+                .then(response => {
+                    document.getElementById('titulo').innerHTML = response.data.docs[0].title;
+                    document.getElementById('imgBuscada').src = "http://covers.openlibrary.org/b/isbn/"+response.data.docs[0].isbn[0]+"-L.jpg?default=false";
+                    document.getElementById('anyo_publi').innerHTML = response.data.docs[0].publish_date[0];
+                    document.getElementById('bookisbn').innerHTML = response.data.docs[0].isbn[0];
+                })
+                .catch(error => {
+                    document.getElementById('bookisbn').innerHTML = "Error, ISBN no encontrado: " + error;
+                })
+                document.getElementById("busqueda").style.display= 'block';
+                document.getElementById("presentacion").style.display = 'none';
+        }
+
+        function guardar() {
+            let tituloV = document.getElementById('titulo').innerHTML;
+            let imagenV = document.getElementById('imgBuscada').src;
+            let anyo_publicacion = document.getElementById('anyo_publi').innerHTML;
+            let libroisbn = document.getElementById('bookisbn').innerHTML;
+            $.ajax({
+                type: "POST", //metodo POST para enviar datos al servidor
+                url: 'php/conexionBBDD.php', // ruta del fichero PHP del servidor
+                data: {tituloV:tituloV, imagenV:imagenV, anyo_publicacion:anyo_publicacion, libroisbn:libroisbn}, // datos a enviar (p.ej. {valor:valor, nombre:nombre})
+                success: function (response) { //resultado del PHP del servidor
+                    alert(response);
+                },
+                error: function () {
+                    alert("Error");
+                }
+            });
+        }
+
+    </script>
+</body>
+
+</html>
